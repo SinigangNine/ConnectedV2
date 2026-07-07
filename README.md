@@ -1,2 +1,1 @@
-# ConnectedV2
-GPCM Planner
+# Connected

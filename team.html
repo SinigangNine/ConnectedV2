@@ -1,0 +1,486 @@
+<html class="light" lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Team Management — Connected</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&amp;family=Playfair+Display:wght@600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=block" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script id="tailwind-config">try{
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-container-lowest": "#ffffff",
+                        "primary-container": "#1b2a4a",
+                        "on-secondary-container": "#765100",
+                        "surface-dim": "#d5daea",
+                        "tertiary": "#161714",
+                        "surface-container-high": "#e4e8f8",
+                        "primary": "#041534",
+                        "inverse-surface": "#2b303c",
+                        "error": "#ba1a1a",
+                        "surface": "#f9f9ff",
+                        "secondary-fixed-dim": "#f5bd5d",
+                        "primary-fixed-dim": "#b7c6ee",
+                        "on-surface-variant": "#45464e",
+                        "on-primary-fixed-variant": "#384668",
+                        "secondary": "#7e5700",
+                        "error-container": "#ffdad6",
+                        "outline": "#75777f",
+                        "secondary-fixed": "#ffdeac",
+                        "inverse-on-surface": "#edf0ff",
+                        "on-tertiary": "#ffffff",
+                        "outline-variant": "#c5c6cf",
+                        "on-error-container": "#93000a",
+                        "on-primary": "#ffffff",
+                        "secondary-container": "#fec564",
+                        "background": "#f9f9ff",
+                        "on-tertiary-fixed-variant": "#474743",
+                        "on-surface": "#161c27",
+                        "on-secondary": "#ffffff",
+                        "on-error": "#ffffff",
+                        "inverse-primary": "#b7c6ee",
+                        "tertiary-container": "#2b2b28",
+                        "surface-variant": "#dee2f2",
+                        "on-secondary-fixed-variant": "#604100",
+                        "on-primary-container": "#8392b7",
+                        "tertiary-fixed-dim": "#c8c6c2",
+                        "primary-fixed": "#d9e2ff",
+                        "on-background": "#161c27",
+                        "on-tertiary-container": "#93928e",
+                        "surface-tint": "#4f5e81",
+                        "tertiary-fixed": "#e5e2dd",
+                        "on-tertiary-fixed": "#1c1c19",
+                        "surface-container": "#e9edfe",
+                        "surface-bright": "#f9f9ff",
+                        "on-secondary-fixed": "#281900",
+                        "surface-container-low": "#f1f3ff",
+                        "on-primary-fixed": "#0a1a3a",
+                        "surface-container-highest": "#dee2f2"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "container-max": "1280px",
+                        "stack-md": "16px",
+                        "gutter": "24px",
+                        "margin-mobile": "16px",
+                        "unit": "8px",
+                        "stack-sm": "8px",
+                        "stack-lg": "32px",
+                        "margin-desktop": "40px"
+                    },
+                    "fontFamily": {
+                        "headline-md": ["Playfair Display"],
+                        "headline-lg-mobile": ["Playfair Display"],
+                        "label-md": ["Inter"],
+                        "display-lg": ["Playfair Display"],
+                        "body-md": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "headline-lg": ["Playfair Display"],
+                        "caption": ["Inter"]
+                    },
+                    "fontSize": {
+                        "headline-md": ["24px", { "lineHeight": "1.4", "fontWeight": "600" }],
+                        "headline-lg-mobile": ["28px", { "lineHeight": "1.3", "fontWeight": "700" }],
+                        "label-md": ["14px", { "lineHeight": "1", "letterSpacing": "0.05em", "fontWeight": "600" }],
+                        "display-lg": ["48px", { "lineHeight": "1.2", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "body-md": ["16px", { "lineHeight": "1.5", "fontWeight": "400" }],
+                        "body-lg": ["18px", { "lineHeight": "1.6", "fontWeight": "400" }],
+                        "headline-lg": ["32px", { "lineHeight": "1.3", "fontWeight": "700" }],
+                        "caption": ["12px", { "lineHeight": "1.4", "fontWeight": "400" }]
+                    }
+                },
+            },
+        }
+    }catch(_e){}</script>
+<style>
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-in {
+            animation: fadeIn 0.4s ease-out forwards;
+        }
+        .modal-overlay {
+            background-color: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(4px);
+        }
+    </style>
+</head>
+<body class="font-body-md text-on-surface">
+<!-- TopNavBar -->
+<nav class="bg-surface-container-lowest border-b border-outline-variant fixed top-0 w-full z-50">
+<div class="flex justify-between items-center w-full px-margin-desktop max-w-container-max mx-auto h-16">
+<div class="font-headline-md text-headline-md font-bold text-primary">Connected</div>
+<div class="flex items-center gap-stack-lg">
+<a class="font-label-md text-label-md text-on-surface-variant hover:text-secondary transition-colors duration-200" href="index.html">Home</a>
+<a class="font-label-md text-label-md text-on-surface-variant hover:text-secondary transition-colors duration-200" href="ui.html">Planner</a>
+<a class="font-label-md text-label-md text-primary border-b-2 border-secondary pb-1" href="#">Team</a>
+</div>
+<div class="w-24 md:block hidden"></div>
+</div>
+</nav>
+<!-- Main Content Canvas -->
+<main class="pt-24 pb-stack-lg px-margin-desktop max-w-container-max mx-auto">
+<!-- Page Header -->
+<header class="mb-stack-lg animate-fade-in">
+<h1 class="font-headline-lg text-headline-lg text-primary mb-unit">Team Management</h1>
+<p class="text-on-surface-variant max-w-2xl">Coordinate your volunteers, manage weekly availability, and ensure every service role is filled with the right heart and hands.</p>
+</header>
+<!-- Bento Grid Layout -->
+<div class="grid grid-cols-1 md:grid-cols-12 gap-gutter">
+<!-- Left Sidebar: Team Composition -->
+<aside class="md:col-span-4 flex flex-col gap-gutter">
+<div class="bg-surface-container-lowest border border-outline-variant rounded-lg p-stack-md animate-fade-in" style="animation-delay: 0.1s;">
+<div class="flex items-center justify-between mb-stack-md">
+<h2 class="font-label-md text-label-md text-primary uppercase tracking-wider">Team Composition</h2>
+<span class="material-symbols-outlined text-secondary">groups</span>
+</div>
+<div class="space-y-stack-md" id="composition-stats">
+<div class="text-center py-4" id="no-stats-placeholder">
+<p class="text-caption text-on-surface-variant italic">No members added yet</p>
+</div>
+</div>
+</div>
+<!-- Featured Image Card -->
+<div class="relative h-64 rounded-lg overflow-hidden border border-outline-variant animate-fade-in" style="animation-delay: 0.2s;">
+<div class="absolute inset-0 bg-primary/20 z-10"></div>
+<img class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCl2XDTOIwBjnuPOy3HoGTBldfZWhF0MictYbaj6AAxnr3ypPbMepalUmBq8ouR4s4ePdmcZ1oDRO0GTbpT06gJ5qSFbhikHEnCyEfNl8CrHZlOqayCHMWsHjFE0eP-ScRBWc1VJIAPRtEzcJ_UvWqn9KCC6B5yIxr628EsNN2xSQ7QxEN66YO3i7zEyb8IuJxnUy01YEk7iz5U6AoAWakX0esvd3jluFjCu49nwkTJqx5n8hhiVzUP"/>
+<div class="absolute bottom-0 left-0 p-stack-md z-20 text-white">
+<p class="font-label-md text-label-md opacity-80 mb-unit">Next Rehearsal</p>
+<h3 class="font-headline-md text-headline-md">Thursday, 7:00 PM</h3>
+</div>
+</div>
+</aside>
+<!-- Right Content: Member List -->
+<div class="md:col-span-8 flex flex-col gap-gutter">
+<!-- Member List Section -->
+<section class="bg-white border border-outline-variant rounded-lg animate-fade-in min-h-[400px]" style="animation-delay: 0.4s;">
+<div class="p-stack-md flex justify-between items-center border-b border-outline-variant">
+<h2 class="font-label-md text-label-md text-primary uppercase tracking-wider" id="memberListTitle">Member List (0)</h2>
+<button class="bg-primary text-white px-stack-md py-stack-sm font-label-md text-label-md flex items-center gap-unit hover:bg-primary/90 transition-all rounded" onclick="openModal()">
+<span class="material-symbols-outlined text-[18px]">person_add</span> ADD NEW MEMBER
+                    </button>
+</div>
+<div class="divide-y divide-outline-variant" id="memberListContainer">
+<div class="p-stack-lg flex flex-col items-center justify-center text-center py-20" id="emptyState">
+<div class="w-16 h-16 rounded-full bg-surface-container-low flex items-center justify-center mb-stack-md">
+<span class="material-symbols-outlined text-outline text-3xl">group_off</span>
+</div>
+<h3 class="font-headline-md text-primary mb-unit">No team members yet</h3>
+<p class="text-on-surface-variant max-w-xs">Start building your worship team by adding your first volunteer member.</p>
+</div>
+</div>
+</section>
+</div>
+</div>
+</main>
+<!-- Footer -->
+<footer class="bg-surface-container-low border-t border-outline-variant mt-stack-lg">
+<div class="flex flex-col md:flex-row justify-between items-center w-full px-margin-desktop py-stack-lg max-w-container-max mx-auto">
+<div class="font-headline-md text-headline-md text-primary mb-stack-md md:mb-0">Connected</div>
+<div class="flex flex-col md:flex-row items-center gap-stack-lg">
+<span class="text-on-surface-variant opacity-80 text-body-md">© 2024 Connected Worship. All rights reserved.</span>
+<div class="flex gap-gutter">
+<a class="font-label-md text-label-md text-on-surface-variant opacity-80 hover:text-secondary transition-colors" href="#">Privacy</a>
+<a class="font-label-md text-label-md text-on-surface-variant opacity-80 hover:text-secondary transition-colors" href="#">Terms</a>
+</div>
+</div>
+</div>
+</footer>
+<!-- Add Member Modal -->
+<div class="fixed inset-0 z-[100] hidden flex items-center justify-center px-margin-mobile" id="addMemberModal">
+<div class="modal-overlay absolute inset-0" onclick="closeModal()"></div>
+<div class="bg-white rounded-lg shadow-xl w-full max-w-md relative z-[110] overflow-hidden transform transition-all duration-300 scale-95 opacity-0" id="modalContainer">
+<div class="p-stack-md border-b border-outline-variant bg-surface-container-lowest">
+<h3 class="font-headline-md text-headline-md text-primary" id="modalTitle">Add New Member</h3>
+</div>
+<form class="p-stack-md space-y-stack-md" id="memberForm">
+<input id="editMemberId" type="hidden" value=""/>
+<div>
+<label class="block font-label-md text-label-md text-on-surface-variant mb-unit" for="memberName">NAME</label>
+<input class="w-full bg-white border border-outline px-4 py-3 rounded focus:ring-2 focus:ring-secondary focus:border-secondary outline-none transition-all" id="memberName" placeholder="Full Name" required="" type="text"/>
+</div>
+<div>
+<label class="block font-label-md text-label-md text-on-surface-variant mb-unit" for="memberEmail">EMAIL ADDRESS</label>
+<input class="w-full bg-white border border-outline px-4 py-3 rounded focus:ring-2 focus:ring-secondary focus:border-secondary outline-none transition-all" id="memberEmail" placeholder="example@church.com" required="" type="email"/>
+</div>
+<div class="flex items-center gap-unit mb-unit">
+<input checked="" class="w-4 h-4 text-secondary border-outline rounded focus:ring-secondary cursor-pointer" id="sendInvite" type="checkbox"/>
+<label class="text-caption text-on-surface-variant cursor-pointer" for="sendInvite">Invite via Email</label>
+</div><div class="pt-stack-md flex flex-col gap-unit">
+<button class="w-full bg-primary text-white py-stack-md font-label-md text-label-md hover:bg-primary/90 transition-all shadow-md rounded" id="submitBtn" type="submit">INVITE TO TEAM</button>
+<button class="w-full bg-transparent text-on-surface-variant py-stack-sm font-label-md text-label-md hover:bg-surface-variant transition-all rounded" onclick="closeModal()" type="button">CANCEL</button>
+</div>
+</form>
+</div>
+</div>
+<!-- Scripts -->
+<script>
+    // Supabase Configuration
+    const supabaseUrl = 'https://wrsbdzzztckxyxuxspzu.supabase.co';
+    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Indyc2Jkenp6dGNreHl4dXhzcHp1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE0OTc4MTIsImV4cCI6MjA5NzA3MzgxMn0.agffd3LifwG-zkINTOYriozivRSl1nTEqKYYg3jLJXQ';
+    const _supabase = supabase.createClient(supabaseUrl, supabaseKey);
+
+    let members = [];
+    const container = document.getElementById('memberListContainer');
+    const emptyState = document.getElementById('emptyState');
+    const listTitle = document.getElementById('memberListTitle');
+    const statsContainer = document.getElementById('composition-stats');
+    const DELETE_CODE = "6286";
+
+    // Load data from Supabase
+    async function loadMembers() {
+        const { data, error } = await _supabase
+            .from('team_members')
+            .select('*')
+            .order('created_at', { ascending: false });
+
+        if (error) {
+            console.error('Error fetching members:', error);
+            return;
+        }
+
+        members = data.map(item => ({
+            id: item.id,
+            ...item.data
+        }));
+
+        renderMembers();
+    }
+
+    function updateComposition() {
+        const counts = {};
+        members.forEach(m => {
+            counts[m.role] = (counts[m.role] || 0) + 1;
+        });
+
+        listTitle.innerText = `Member List (${members.length})`;
+        statsContainer.innerHTML = '';
+
+        const roles = Object.keys(counts);
+        if (roles.length === 0) {
+            statsContainer.innerHTML = `<div id="no-stats-placeholder" class="text-center py-4">
+                <p class="text-caption text-on-surface-variant italic">No members added yet</p>
+            </div>`;
+            return;
+        }
+
+        roles.sort().forEach((role) => {
+            const count = counts[role];
+            const percentage = (count / members.length) * 100;
+            
+            const statItem = document.createElement('div');
+            statItem.className = 'space-y-unit animate-fade-in';
+            statItem.innerHTML = `
+                <div class="flex justify-between text-caption font-bold text-on-surface-variant">
+                    <span>${role.toUpperCase()}</span>
+                    <span>${count}</span>
+                </div>
+                <div class="h-2 w-full bg-surface-container-low rounded-full overflow-hidden">
+                    <div class="h-full bg-secondary transition-all duration-500" style="width: ${percentage}%"></div>
+                </div>
+            `;
+            statsContainer.appendChild(statItem);
+        });
+    }
+
+    function openModal(memberId = null) {
+        const modal = document.getElementById('addMemberModal');
+        const modalContainer = document.getElementById('modalContainer');
+        const form = document.getElementById('memberForm');
+        const title = document.getElementById('modalTitle');
+        const submitBtn = document.getElementById('submitBtn');
+
+        if (memberId !== null) {
+            const m = members.find(mem => mem.id === memberId);
+            title.innerText = "Edit Member";
+            submitBtn.innerText = "SAVE CHANGES";
+            document.getElementById('editMemberId').value = memberId;
+            document.getElementById('memberName').value = m.name;
+            document.getElementById('memberEmail').value = m.email;
+            document.getElementById('memberRole').value = m.role;
+        } else {
+            title.innerText = "Add New Member";
+            submitBtn.innerText = "INVITE TO TEAM";
+            form.reset();
+            document.getElementById('editMemberId').value = "";
+        }
+
+        modal.classList.remove('hidden');
+        setTimeout(() => {
+            modalContainer.classList.remove('scale-95', 'opacity-0');
+            modalContainer.classList.add('scale-100', 'opacity-100');
+        }, 10);
+    }
+
+    function closeModal() {
+        const modal = document.getElementById('addMemberModal');
+        const modalContainer = document.getElementById('modalContainer');
+        modalContainer.classList.add('scale-95', 'opacity-0');
+        modalContainer.classList.remove('scale-100', 'opacity-100');
+        setTimeout(() => modal.classList.add('hidden'), 300);
+    }
+
+    function renderMembers() {
+        const rows = container.querySelectorAll('.member-row');
+        rows.forEach(row => row.remove());
+
+        if (members.length === 0) {
+            emptyState.style.display = 'flex';
+            updateComposition();
+            return;
+        }
+
+        emptyState.style.display = 'none';
+        members.forEach((m) => {
+            const row = document.createElement('div');
+            row.className = 'p-stack-md flex items-center justify-between hover:bg-surface transition-all duration-300 member-row animate-fade-in';
+            row.innerHTML = `
+                <div class="flex items-center gap-stack-md">
+                    <div class="w-10 h-10 rounded-full ${m.color} flex items-center justify-center text-primary font-bold text-sm">${m.initials}</div>
+                    <div>
+                        <h4 class="text-body-md font-bold text-primary">${m.name}</h4>
+                        <p class="text-caption text-on-surface-variant">${m.role} • ${m.email}</p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-stack-lg">
+                    <span class="px-3 py-1 bg-surface-container-low text-on-primary-container text-[10px] font-bold rounded-full hidden sm:inline-block">ACTIVE</span>
+                    <div class="flex gap-stack-sm">
+                        <button onclick="openModal('${m.id}')" class="text-outline hover:text-secondary transition-colors" title="Edit Member">
+                            <span class="material-symbols-outlined text-[20px]">edit</span>
+                        </button>
+                        <button onclick="deleteMember('${m.id}')" class="text-outline hover:text-error transition-colors" title="Delete Member">
+                            <span class="material-symbols-outlined text-[20px]">delete</span>
+                        </button>
+                    </div>
+                </div>
+            `;
+            container.appendChild(row);
+        });
+        updateComposition();
+    }
+
+    async function deleteMember(id) {
+        const code = prompt("Security Check: Please enter the deletion code (6286) to remove this member:");
+        if (code === DELETE_CODE) {
+            const { error } = await _supabase
+                .from('team_members')
+                .delete()
+                .eq('id', id);
+
+            if (error) {
+                console.error('Error deleting member:', error);
+                alert('Error deleting member. Please try again.');
+                return;
+            }
+
+            members = members.filter(m => m.id !== id);
+            renderMembers();
+        } else if (code !== null) {
+            alert("Incorrect security code. Deletion cancelled.");
+        }
+    }
+
+    document.getElementById('memberForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const name = document.getElementById('memberName').value;
+        const email = document.getElementById('memberEmail').value;
+        const role = document.getElementById('memberRole').value;
+        const memberId = document.getElementById('editMemberId').value;
+
+        const initials = name.split(' ').filter(n => n).map(n => n[0]).join('').toUpperCase().substring(0, 2);
+        
+        let memberData;
+        if (memberId !== "") {
+            const existing = members.find(m => m.id === memberId);
+            memberData = {
+                name,
+                email,
+                role,
+                initials,
+                color: existing.color || 'bg-surface-dim'
+            };
+
+            const { error } = await _supabase
+                .from('team_members')
+                .update({ data: memberData })
+                .eq('id', memberId);
+
+            if (error) {
+                console.error('Error updating member:', error);
+                alert('Error saving changes. Please try again.');
+                return;
+            }
+        } else {
+            const colors = ['bg-secondary-fixed', 'bg-primary-fixed', 'bg-surface-dim', 'bg-secondary-fixed-dim', 'bg-surface-container-highest'];
+            const color = colors[Math.floor(Math.random() * colors.length)];
+            memberData = { name, email, role, initials, color };
+
+            const { data, error } = await _supabase
+                .from('team_members')
+                .insert([{ data: memberData }])
+                .select();
+
+            if (error) {
+                console.error('Error adding member:', error);
+                alert('Error adding member. Please try again.');
+                return;
+            }
+            
+            // The insert above returns an array, so we get the first item
+            if (data && data[0]) {
+                memberData.id = data[0].id;
+            }
+        }
+        
+        closeModal();
+        await loadMembers(); // Reload everything to ensure sync
+    });
+
+    // Initialize
+    loadMembers();
+</script>
+
+<script>
+function showInviteToast(email) {
+    const container = document.getElementById('toast-container');
+    const toast = document.createElement('div');
+    toast.className = 'bg-primary text-white px-stack-md py-stack-sm rounded shadow-xl animate-fade-in flex items-center gap-unit pointer-events-auto';
+    toast.innerHTML = `
+        <span class="material-symbols-outlined text-secondary">mail</span>
+        <span class="text-label-md">Invitation email sent to ${email}! ✨</span>
+    `;
+    container.appendChild(toast);
+    setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateY(10px)';
+        toast.style.transition = 'all 0.4s ease';
+        setTimeout(() => toast.remove(), 400);
+    }, 4000);
+}
+
+// Intercept the existing form to add the toast logic
+const originalForm = document.getElementById('memberForm');
+const originalSubmit = originalForm.onsubmit || (() => {}); 
+
+originalForm.addEventListener('submit', function(e) {
+    const email = document.getElementById('memberEmail').value;
+    const shouldInvite = document.getElementById('sendInvite').checked;
+    if (shouldInvite) {
+        // Mocking the email invitation call
+        console.log('Mock: Sending invitation to ' + email);
+        setTimeout(() => showInviteToast(email), 800);
+    }
+});
+</script></body></html>

@@ -1,0 +1,34 @@
+{
+  "background_color": "#001840",
+  "dir": "ltr",
+  "display": "standalone",
+  "name": "Connected",
+  "orientation": "any",
+  "scope": "https://sinigangnine.github.io/Connected/",
+  "short_name": "CNNTD",
+  "start_url": "https://sinigangnine.github.io/Connected/",
+  "theme_color": "#ffd51e",
+  "id": "CNNTD",
+  "description": "Church worship schedule planner for your team",
+  "lang": "en",
+  "categories": [
+    "developer tools",
+    "music"
+  ],
+  "display_override": [
+    "standalone",
+    "window-controls-overlay"
+  ],
+  "icons": [
+    {
+      "src": "Connected192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "Connected.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
