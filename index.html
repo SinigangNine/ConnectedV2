@@ -180,6 +180,9 @@
 <div class="grid grid-cols-1 md:grid-cols-3 gap-gutter min-h-[100px]" id="completedServicesList">
 <div class="col-span-full flex justify-center py-12" id="completedLoading"><div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div></div>
 </div>
+<div class="flex justify-center mt-stack-lg hidden" id="completedShowMoreWrap">
+<button type="button" id="completedShowMoreBtn" class="px-8 py-3 border border-secondary text-secondary rounded-lg font-label-md text-label-md hover:bg-secondary hover:text-on-secondary transition-colors">Show More</button>
+</div>
 </section>
 </main>
 <!-- Footer -->
@@ -218,6 +221,36 @@
 <span class="font-label-md text-[10px]">More</span>
 </a>
 </nav>
+<!-- Archive Detail Modal -->
+<div class="fixed inset-0 z-[100] hidden items-center justify-center px-margin-mobile md:px-margin-desktop" id="archiveModal">
+<div class="absolute inset-0 bg-on-background/60 backdrop-blur-sm" id="archiveModalBackdrop"></div>
+<div class="relative bg-surface-container-lowest w-full max-w-lg max-h-[85vh] overflow-y-auto rounded-xl stately-shadow border border-outline-variant p-gutter">
+<div class="flex justify-between items-start mb-stack-md">
+<div>
+<span class="px-3 py-1 rounded-full inline-flex items-center gap-1 mb-2" id="archiveStatusBadge">
+<span class="material-symbols-outlined text-[14px]" id="archiveStatusIcon">check_circle</span>
+<span class="font-label-md text-[12px] uppercase tracking-wider" id="archiveStatusText">Completed</span>
+</span>
+<h3 class="font-headline-md text-headline-md text-primary capitalize" id="archiveTitle">Service</h3>
+<p class="font-body-md text-on-surface-variant" id="archiveDate">Date</p>
+</div>
+<button class="text-on-surface-variant hover:text-primary transition-colors" id="archiveModalClose" aria-label="Close">
+<span class="material-symbols-outlined">close</span>
+</button>
+</div>
+<div class="mb-stack-md" id="archiveSpeaker"></div>
+<div class="flex flex-wrap gap-2 mb-stack-md" id="archiveRoles"></div>
+<div>
+<h4 class="font-label-md text-label-md text-primary uppercase tracking-wider mb-2">Song Set</h4>
+<p class="font-caption text-caption text-on-surface-variant opacity-70 mb-2">Tap a song to search for chords</p>
+<ul class="divide-y divide-outline-variant/30" id="archiveSongs"></ul>
+</div>
+<div class="mt-stack-md hidden" id="archiveFilesSection">
+<h4 class="font-label-md text-label-md text-primary uppercase tracking-wider mb-2">Files &amp; Documents</h4>
+<div class="flex flex-col gap-2" id="archiveFiles"></div>
+</div>
+</div>
+</div>
 <script>
         // Supabase Initialization
         const SUPABASE_URL = 'https://wrsbdzzztckxyxuxspzu.supabase.co';
@@ -237,13 +270,70 @@
             }
         }
 
+        // Keep all rows around so the service modal can look them up by id
+        const allRowsById = {};
+
+        // Pagination state for the "Recently Completed Services" section
+        const COMPLETED_PAGE_SIZE = 3;
+        let allCompletedCards = [];
+        let completedVisibleCount = COMPLETED_PAGE_SIZE;
+
+        function renderCompletedCards() {
+            const completedContainer = document.getElementById('completedServicesList');
+            const showMoreWrap = document.getElementById('completedShowMoreWrap');
+
+            completedContainer.innerHTML = allCompletedCards.slice(0, completedVisibleCount).join('');
+
+            if (completedVisibleCount < allCompletedCards.length) {
+                showMoreWrap.classList.remove('hidden');
+            } else {
+                showMoreWrap.classList.add('hidden');
+            }
+        }
+
+        // File type icon helper (for attachments shown on cards / modal)
+        const FILE_ICONS = {
+            pdf:  { icon: '📕', bg: '#fdecea', color: '#c53030' },
+            doc:  { icon: '📘', bg: '#e3f2fd', color: '#1565c0' },
+            docx: { icon: '📘', bg: '#e3f2fd', color: '#1565c0' },
+            ppt:  { icon: '📙', bg: '#fff4e6', color: '#d9631e' },
+            pptx: { icon: '📙', bg: '#fff4e6', color: '#d9631e' },
+            xls:  { icon: '📗', bg: '#e8f5e9', color: '#2e7d32' },
+            xlsx: { icon: '📗', bg: '#e8f5e9', color: '#2e7d32' },
+            txt:  { icon: '📄', bg: '#f1f4f9', color: '#4a5568' }
+        };
+        function getFileMeta(filename) {
+            const ext = (filename.split('.').pop() || '').toLowerCase();
+            return FILE_ICONS[ext] || { icon: '📄', bg: '#f1f4f9', color: '#4a5568' };
+        }
+        function formatFileSize(bytes) {
+            if (!bytes && bytes !== 0) return '';
+            if (bytes < 1024) return bytes + ' B';
+            if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+            return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+        }
+
         function createServiceCard(row) {
             const s = row.data;
             if (!s) return '';
             
             // Reconcile completed status (could be string or boolean)
             const isCompleted = s.completed === true || s.completed === "true";
+
+            allRowsById[row.id] = row;
+
+            const archiveTrigger = isCompleted
+                ? `<button type="button" onclick="openServiceModal('${row.id}')" class="mt-stack-sm w-full py-2 border border-secondary text-secondary rounded-lg font-label-md text-label-md hover:bg-secondary hover:text-on-secondary transition-colors inline-block text-center">View Archive</button>`
+                : `<div class="mt-stack-sm flex gap-2">
+                        <button type="button" onclick="openServiceModal('${row.id}')" class="flex-1 py-2 border border-secondary text-secondary rounded-lg font-label-md text-label-md hover:bg-secondary hover:text-on-secondary transition-colors inline-block text-center">View Plan</button>
+                        <a href="ui.html" class="flex-1 py-2 bg-secondary text-on-secondary rounded-lg font-label-md text-label-md hover:bg-secondary-container hover:text-on-secondary-container transition-colors inline-block text-center">Edit Plan</a>
+                   </div>`;
             
+            const fileChips = isCompleted ? (s.attachments || []).filter(a => a.url).map(a => {
+                const meta = getFileMeta(a.name);
+                return `<a href="${a.url}" target="_blank" rel="noopener" download="${escapeHtml(a.name)}" class="inline-flex items-center gap-1 bg-surface-container text-on-surface px-3 py-1 rounded-full text-[12px] font-label-md border border-outline-variant hover:border-secondary hover:text-secondary transition-colors">${meta.icon} ${escapeHtml(a.name)} <span class="material-symbols-outlined text-[13px]">download</span></a>`;
+            }).join('') : '';
+
             return `
                 <div class="bg-surface-container-lowest border border-outline-variant p-gutter rounded-xl stately-shadow flex flex-col gap-stack-md transition-transform hover:-translate-y-1">
                     <div class="flex justify-between items-start">
@@ -262,12 +352,109 @@
                         </div>
                         <span class="font-label-md text-on-surface truncate">${s.preacher || 'No Speaker Assigned'}</span>
                     </div>
-                    <a href="ui.html" class="mt-stack-sm w-full py-2 border border-secondary text-secondary rounded-lg font-label-md text-label-md hover:bg-secondary hover:text-on-secondary transition-colors inline-block text-center">
-                        ${isCompleted ? 'View Archive' : 'Edit Plan'}
-                    </a>
+                    ${fileChips ? `<div class="flex flex-wrap gap-2">${fileChips}</div>` : ''}
+                    ${archiveTrigger}
                 </div>
             `;
         }
+
+        // Escape helper for interpolating user-entered text into HTML
+        function escapeHtml(str) {
+            if (str === null || str === undefined) return '';
+            return String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+        }
+
+        function searchChords(title) {
+            const query = encodeURIComponent(`${title} chords`);
+            window.open(`https://www.google.com/search?q=${query}`, '_blank', 'noopener');
+        }
+
+        function openServiceModal(id) {
+            const row = allRowsById[id];
+            if (!row || !row.data) return;
+            const s = row.data;
+            const isCompleted = s.completed === true || s.completed === "true";
+
+            const badge = document.getElementById('archiveStatusBadge');
+            const icon = document.getElementById('archiveStatusIcon');
+            const text = document.getElementById('archiveStatusText');
+            badge.className = (isCompleted ? 'bg-green-100 text-green-800' : 'bg-secondary-container/20 text-on-secondary-container') + ' px-3 py-1 rounded-full inline-flex items-center gap-1 mb-2';
+            icon.textContent = isCompleted ? 'check_circle' : 'pending';
+            text.textContent = isCompleted ? 'Completed' : 'Pending';
+
+            document.getElementById('archiveTitle').textContent = (s.service_type || 'Service').replace('_', ' ');
+            document.getElementById('archiveDate').textContent = formatLongDate(s.date);
+
+            const speakerEl = document.getElementById('archiveSpeaker');
+            speakerEl.innerHTML = s.preacher
+                ? `<p class="font-body-md text-on-surface-variant"><strong class="text-on-surface">Speaker:</strong> ${escapeHtml(s.preacher)}</p>`
+                : '';
+
+            const rolesEl = document.getElementById('archiveRoles');
+            const rolesEntries = Object.entries(s.roles || {}).filter(([, v]) => v);
+            rolesEl.innerHTML = rolesEntries.length
+                ? rolesEntries.map(([k, v]) => `<span class="bg-surface-container text-on-surface px-3 py-1 rounded-full text-[12px] font-label-md border border-outline-variant">${escapeHtml(k.toUpperCase())}: ${escapeHtml(v)}</span>`).join('')
+                : '';
+
+            const songsEl = document.getElementById('archiveSongs');
+            const songs = s.songs || [];
+            songsEl.innerHTML = songs.length
+                ? songs.map((song, i) => `
+                    <li class="py-2 flex items-center gap-3">
+                        <span class="w-6 h-6 flex items-center justify-center rounded-full bg-secondary-container/30 text-on-secondary-container text-[12px] font-label-md">${i + 1}</span>
+                        <button type="button" onclick="searchChords('${escapeHtml(song.title).replace(/'/g, "\\'")}')" class="font-body-md text-on-surface border-b border-secondary hover:text-secondary transition-colors">${escapeHtml(song.title)}</button>
+                        <span class="font-caption text-caption text-on-surface-variant">${song.key ? '· ' + escapeHtml(song.key) : ''}</span>
+                    </li>`).join('')
+                : '<li class="py-2 font-body-md text-on-surface-variant opacity-70">No songs recorded.</li>';
+
+            const filesSection = document.getElementById('archiveFilesSection');
+            const filesEl = document.getElementById('archiveFiles');
+            const files = (s.attachments || []).filter(a => a.url);
+            if (files.length) {
+                filesSection.classList.remove('hidden');
+                filesEl.innerHTML = files.map(a => {
+                    const meta = getFileMeta(a.name);
+                    const downloadAttr = isCompleted ? `download="${escapeHtml(a.name)}"` : '';
+                    return `<a href="${a.url}" target="_blank" rel="noopener" ${downloadAttr} class="flex items-center gap-3 bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 hover:border-secondary transition-colors">
+                        <span class="w-8 h-8 rounded-lg flex items-center justify-center text-sm" style="background:${meta.bg}; color:${meta.color}">${meta.icon}</span>
+                        <span class="flex-1 min-w-0">
+                            <span class="block font-label-md text-on-surface truncate">${escapeHtml(a.name)}</span>
+                            <span class="block font-caption text-caption text-on-surface-variant">${formatFileSize(a.size)}${isCompleted ? ' · Tap to download' : ' · Tap to view'}</span>
+                        </span>
+                        <span class="material-symbols-outlined text-on-surface-variant text-[18px]">${isCompleted ? 'download' : 'visibility'}</span>
+                    </a>`;
+                }).join('');
+            } else {
+                filesSection.classList.add('hidden');
+                filesEl.innerHTML = '';
+            }
+
+            const modal = document.getElementById('archiveModal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        function closeArchiveModal() {
+            const modal = document.getElementById('archiveModal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+
+        document.getElementById('archiveModalBackdrop').addEventListener('click', closeArchiveModal);
+        document.getElementById('archiveModalClose').addEventListener('click', closeArchiveModal);
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') closeArchiveModal();
+        });
+
+        document.getElementById('completedShowMoreBtn').addEventListener('click', () => {
+            completedVisibleCount += COMPLETED_PAGE_SIZE;
+            renderCompletedCards();
+        });
 
         async function initDashboard() {
             const pendingContainer = document.getElementById('pendingServicesList');
@@ -307,10 +494,12 @@
 
                 // Populate Completed
                 if (completedCards.length > 0) {
-                    // Limit to 3 most recent for dashboard
-                    completedContainer.innerHTML = completedCards.slice(0, 3).join('');
+                    allCompletedCards = completedCards;
+                    completedVisibleCount = COMPLETED_PAGE_SIZE;
+                    renderCompletedCards();
                 } else {
                     completedContainer.innerHTML = '<p class="col-span-full text-center text-on-surface-variant opacity-50 py-10">No completed services found.</p>';
+                    document.getElementById('completedShowMoreWrap').classList.add('hidden');
                 }
 
             } catch (err) {
