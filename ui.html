@@ -219,7 +219,7 @@
       position: relative;
       transition: 0.3s;
     }
-    .schedule-card.is-done { border-left-color: #4ade80; opacity: 0.8; }
+    .schedule-card.is-done { background: #A7F3D0; border-left-color: #4ade80; }
 
     .status-toggle {
       border: none;
@@ -263,6 +263,63 @@
 
     .song-num { width: 24px; height: 24px; background: var(--mist); color: var(--navy); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.7rem; font-weight: 700; }
 
+    .file-drop-zone {
+      border: 2px dashed var(--mist);
+      border-radius: 14px;
+      padding: 24px 16px;
+      text-align: center;
+      cursor: pointer;
+      transition: 0.2s;
+      background: #F1F4F9;
+    }
+    .file-drop-zone:hover, .file-drop-zone.drag-over {
+      border-color: var(--gold);
+      background: #FBF6E8;
+    }
+    .file-drop-zone .drop-icon { font-size: 1.8rem; display: block; margin-bottom: 6px; }
+    .file-drop-zone .drop-text { font-size: 0.85rem; font-weight: 600; color: var(--navy); }
+    .file-drop-zone .drop-subtext { font-size: 0.72rem; color: var(--slate); margin-top: 4px; }
+
+    .file-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: white;
+      border: 1px solid var(--mist);
+      border-radius: 10px;
+      padding: 10px 12px;
+      margin-top: 10px;
+      animation: fadeInUp 0.3s ease-out both;
+    }
+    .file-item .file-icon {
+      width: 34px; height: 34px; border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1rem; flex-shrink: 0;
+    }
+    .file-item .file-info { flex: 1; min-width: 0; }
+    .file-item .file-name {
+      font-weight: 600; font-size: 0.85rem; color: var(--navy);
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+      text-decoration: none; display: block;
+    }
+    .file-item .file-meta { font-size: 0.7rem; color: var(--slate); }
+    .file-item .file-remove {
+      background: none; border: none; color: #ccc; cursor: pointer; font-size: 1.1rem; flex-shrink: 0;
+    }
+    .file-item.uploading { opacity: 0.6; }
+    .file-item .file-spinner {
+      width: 16px; height: 16px; border: 2px solid var(--mist); border-top-color: var(--gold);
+      border-radius: 50%; animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .attachment-chip {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: rgba(27,42,74,0.05); color: var(--navy);
+      padding: 6px 10px; border-radius: 8px; font-size: 0.75rem; font-weight: 600;
+      text-decoration: none; border: 1px solid rgba(27,42,74,0.1);
+    }
+
     @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.4; } 100% { opacity: 1; } }
     @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
     
@@ -270,7 +327,7 @@
     @keyframes fadeEffect { from { opacity: 0; } to { opacity: 1; } }
 
     @media print {
-      .tab-bar, .section-card, .btn-save, .export-bar, header p, .storage-badge, #installBanner, .btn, .month-heading, .status-toggle { display: none !important; }
+      .tab-bar, .section-card, .btn-save, .export-bar, header p, .storage-badge, #installBanner, .btn, .month-heading, .status-toggle, header a[aria-label="Home"], .attachment-chip { display: none !important; }
       .schedule-card.is-done { display: none !important; }
       body { background: white !important; padding-bottom: 0; }
       .schedule-card { break-inside: avoid; border: 1px solid #eee; box-shadow: none; opacity: 1 !important; margin-bottom: 24px; }
@@ -291,6 +348,7 @@
 </div>
 <header>
 <div id="header-particles"></div>
+<a href="index.html" aria-label="Home" style="position: absolute; top: 20px; left: 20px; z-index: 2; display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.25); border-radius: 10px; color: var(--white); text-decoration: none; font-size: 1.2rem; transition: background 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.22)'" onmouseout="this.style.background='rgba(255,255,255,0.12)'">🏠</a>
 <h1 class="">🎵 Connected</h1>
 <p class="">Schedule · Team · Setlist</p>
 <div class="storage-badge"><span class="dot"></span><span class="" id="storageLabel">Live Sync Active</span></div>
@@ -339,6 +397,16 @@
 </div>
 <button class="btn btn-primary" onclick="addSong()">＋ Add to Setlist</button>
 <ul id="songList" style="list-style: none; margin-top: 16px;"></ul>
+</div>
+<div class="section-card">
+<div class="section-title"><span class="icon">📎</span> Files &amp; Documents</div>
+<label class="file-drop-zone" for="fileInput" id="fileDropZone">
+<span class="drop-icon">📤</span>
+<span class="drop-text">Tap to upload files</span>
+<span class="drop-subtext">PowerPoint, PDF, Word, Excel &amp; more</span>
+</label>
+<input accept=".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.txt,.key,.pages,.numbers" id="fileInput" multiple="" onchange="handleFileSelect(event)" style="display:none;" type="file"/>
+<div id="fileList"></div>
 </div>
 <button class="btn btn-save" id="saveBtn" onclick="saveSchedule()">💾 Save Schedule</button>
 <button class="btn btn-cancel" id="cancelEditBtn" onclick="clearForm()" style="display: none; width: 100%; margin-top: 10px; background: var(--mist); color: var(--slate);">✕ Cancel Editing</button>
@@ -419,7 +487,9 @@
   let activeService = 'sunday';
   let allSchedules = [];
   let songs = [];
+  let attachments = [];
   let editId = null;
+  const ATTACHMENTS_BUCKET = 'attachments';
 
   // ── Init ──────────────────────────────────────────────────────────────
   (async () => {
@@ -491,13 +561,138 @@
   }
   function removeSong(i) { songs.splice(i, 1); renderSongs(); }
 
+  // ── Files & Documents ────────────────────────────────────────────────
+  const FILE_ICONS = {
+    pdf:  { icon: '📕', bg: '#fdecea', color: '#c53030' },
+    doc:  { icon: '📘', bg: '#e3f2fd', color: '#1565c0' },
+    docx: { icon: '📘', bg: '#e3f2fd', color: '#1565c0' },
+    ppt:  { icon: '📙', bg: '#fff4e6', color: '#d9631e' },
+    pptx: { icon: '📙', bg: '#fff4e6', color: '#d9631e' },
+    xls:  { icon: '📗', bg: '#e8f5e9', color: '#2e7d32' },
+    xlsx: { icon: '📗', bg: '#e8f5e9', color: '#2e7d32' },
+    txt:  { icon: '📄', bg: '#f1f4f9', color: '#4a5568' }
+  };
+
+  function getFileMeta(filename) {
+    const ext = (filename.split('.').pop() || '').toLowerCase();
+    return FILE_ICONS[ext] || { icon: '📄', bg: '#f1f4f9', color: '#4a5568' };
+  }
+
+  function formatFileSize(bytes) {
+    if (!bytes && bytes !== 0) return '';
+    if (bytes < 1024) return bytes + ' B';
+    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+    return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+  }
+
+  async function handleFileSelect(event) {
+    const files = Array.from(event.target.files || []);
+    event.target.value = ''; // allow re-selecting the same file later
+    for (const file of files) {
+      await uploadFile(file);
+    }
+  }
+
+  async function uploadFile(file) {
+    const tempId = 'up_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7);
+    const meta = getFileMeta(file.name);
+
+    // Show uploading placeholder
+    attachments.push({ tempId, name: file.name, size: file.size, uploading: true });
+    renderAttachmentsList();
+
+    try {
+      const safeName = file.name.replace(/[^a-zA-Z0-9.\-_]/g, '_');
+      const path = `${activeService}/${Date.now()}_${safeName}`;
+
+      const { error: uploadError } = await db.storage.from(ATTACHMENTS_BUCKET).upload(path, file, {
+        cacheControl: '3600',
+        upsert: false
+      });
+      if (uploadError) throw uploadError;
+
+      const { data: publicUrlData } = db.storage.from(ATTACHMENTS_BUCKET).getPublicUrl(path);
+
+      const idx = attachments.findIndex(a => a.tempId === tempId);
+      if (idx !== -1) {
+        attachments[idx] = {
+          name: file.name,
+          size: file.size,
+          type: file.type,
+          path,
+          url: publicUrlData.publicUrl
+        };
+      }
+      renderAttachmentsList();
+    } catch (err) {
+      attachments = attachments.filter(a => a.tempId !== tempId);
+      renderAttachmentsList();
+      const isMissingBucket = /bucket/i.test(err.message || '');
+      showToast(isMissingBucket
+        ? '❌ Storage not set up yet — create an "attachments" bucket in Supabase'
+        : '❌ Upload failed: ' + (err.message || 'Unknown error'));
+    }
+  }
+
+  function renderAttachmentsList() {
+    const list = document.getElementById('fileList');
+    list.innerHTML = '';
+    attachments.forEach((a, i) => {
+      const meta = getFileMeta(a.name);
+      const div = document.createElement('div');
+      div.className = 'file-item' + (a.uploading ? ' uploading' : '');
+      div.innerHTML = a.uploading
+        ? `<div class="file-icon" style="background:${meta.bg}; color:${meta.color}">${meta.icon}</div>
+           <div class="file-info">
+             <span class="file-name">${escapeHtml(a.name)}</span>
+             <span class="file-meta">Uploading…</span>
+           </div>
+           <div class="file-spinner"></div>`
+        : `<div class="file-icon" style="background:${meta.bg}; color:${meta.color}">${meta.icon}</div>
+           <div class="file-info">
+             <a class="file-name" href="${a.url}" target="_blank" rel="noopener" download="${escapeHtml(a.name)}">${escapeHtml(a.name)}</a>
+             <span class="file-meta">${formatFileSize(a.size)}</span>
+           </div>
+           <button class="file-remove" onclick="removeAttachment(${i})">✕</button>`;
+      list.appendChild(div);
+    });
+  }
+
+  async function removeAttachment(i) {
+    const a = attachments[i];
+    if (!a) return;
+    if (a.path) {
+      try { await db.storage.from(ATTACHMENTS_BUCKET).remove([a.path]); } catch (e) { /* ignore */ }
+    }
+    attachments.splice(i, 1);
+    renderAttachmentsList();
+  }
+
+  // Drag & drop support for the file drop zone
+  (function initFileDropZone() {
+    const zone = document.getElementById('fileDropZone');
+    if (!zone) return;
+    ['dragenter', 'dragover'].forEach(evt => {
+      zone.addEventListener(evt, e => { e.preventDefault(); zone.classList.add('drag-over'); });
+    });
+    ['dragleave', 'drop'].forEach(evt => {
+      zone.addEventListener(evt, e => { e.preventDefault(); zone.classList.remove('drag-over'); });
+    });
+    zone.addEventListener('drop', e => {
+      const files = Array.from(e.dataTransfer.files || []);
+      files.forEach(uploadFile);
+    });
+  })();
+
   // ── Helpers ───────────────────────────────────────────────────────────
   const val = id => document.getElementById(id).value.trim();
   const set = (id, v) => document.getElementById(id).value = v || '';
   function clearForm() {
     ['date','preacher','vocalist','backup1','backup2','guitarist',
      'electricGuitar','bassist','keyboardist','drummer'].forEach(id => set(id, ''));
-    songs = []; renderSongs(); editId = null;
+    songs = []; renderSongs();
+    attachments = []; renderAttachmentsList();
+    editId = null;
     document.getElementById('editFlag').style.display = 'none';
     document.getElementById('cancelEditBtn').style.display = 'none';
   }
@@ -513,6 +708,10 @@
 
   // ── Save ──────────────────────────────────────────────────────────────
   async function saveSchedule() {
+    if (attachments.some(a => a.uploading)) {
+      showToast('⏳ Please wait for file uploads to finish');
+      return;
+    }
     const saveBtn = document.getElementById('saveBtn');
     saveBtn.innerText = "Saving...";
 
@@ -531,7 +730,8 @@
         guitarist: val('guitarist'), electricGuitar: val('electricGuitar'),
         bassist: val('bassist'), keyboardist: val('keyboardist'), drummer: val('drummer')
       },
-      songs: [...songs]
+      songs: [...songs],
+      attachments: [...attachments]
     };
 
     try {
@@ -618,9 +818,22 @@
         div.className = 'schedule-card' + (s.completed ? ' is-done' : '');
         div.style.animationDelay = `${(idx*0.1) + (sIdx * 0.05)}s`;
         
-        const rolesBadges = Object.entries(s.roles || {}).filter(([,v]) => v)
-          .map(([k,v]) => `<span style="background:rgba(27,42,74,0.05); color:var(--navy); padding:4px 8px; border-radius:6px; font-size:0.7rem; font-weight:600; border:1px solid rgba(27,42,74,0.1)">${k.toUpperCase()}: ${escapeHtml(v)}</span>`).join('');
+        const roleEntries = Object.entries(s.roles || {}).filter(([,v]) => v)
+          .sort((a,b) => (a[0] === 'vocalist' ? -1 : b[0] === 'vocalist' ? 1 : 0));
+        const rolesBadges = roleEntries
+          .map(([k,v]) => {
+            const isVocalist = k === 'vocalist';
+            const style = isVocalist
+              ? "background:var(--gold); color:var(--navy); padding:4px 8px; border-radius:6px; font-size:0.7rem; font-weight:700; border:1px solid var(--gold);"
+              : "background:rgba(27,42,74,0.05); color:var(--navy); padding:4px 8px; border-radius:6px; font-size:0.7rem; font-weight:600; border:1px solid rgba(27,42,74,0.1);";
+            return `<span style="${style}">${k.toUpperCase()}: ${escapeHtml(v)}</span>`;
+          }).join('');
         
+        const fileChips = (s.attachments||[]).filter(a => a.url).map(a => {
+          const meta = getFileMeta(a.name);
+          return `<a class="attachment-chip" href="${a.url}" target="_blank" rel="noopener" download="${escapeHtml(a.name)}">${meta.icon} ${escapeHtml(a.name)} <span style="opacity:0.6">⬇</span></a>`;
+        }).join('');
+
         const songItems = (s.songs||[]).map((song,n) => `
           <li style="padding:8px 0; border-bottom:1px dashed var(--mist); display:flex; align-items:center; gap:10px;">
             <span class="song-num">${n+1}</span>
@@ -638,6 +851,7 @@
           <div style="margin-bottom:12px; font-size:0.85rem; color:var(--slate)">${s.preacher ? `<strong>Speaker:</strong> ${escapeHtml(s.preacher)}` : ''}</div>
           <div style="display:flex; flex-wrap:wrap; gap:6px; margin-bottom:16px;">${rolesBadges}</div>
           <ul style="list-style:none; margin-bottom:20px;">${songItems}</ul>
+          ${fileChips ? `<div style="display:flex; flex-wrap:wrap; gap:8px; margin-bottom:16px;">${fileChips}</div>` : ''}
           <div style="display:flex; gap:10px;">
             <button class="btn" style="background:var(--mist); color:var(--navy); font-size:0.8rem; padding:8px 16px; width: auto;" onclick="editSchedule('${row.id}')">✏️ Edit</button>
             <button class="btn" style="background:#fdecea; color:var(--red); font-size:0.8rem; padding:8px 16px; width: auto;" onclick="deleteSchedule('${row.id}')">🗑 Delete</button>
@@ -677,6 +891,8 @@
     set('keyboardist', s.roles.keyboardist); set('drummer', s.roles.drummer);
     songs = [...(s.songs || [])]; 
     renderSongs(); 
+    attachments = [...(s.attachments || [])];
+    renderAttachmentsList();
     editId = id;
     
     document.getElementById('editFlag').style.display = 'inline-block';
